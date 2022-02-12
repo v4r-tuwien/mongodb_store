@@ -404,7 +404,7 @@ def query_message(collection, query_doc, sort_query=[], projection_query={},find
     else:
         if sort_query:
             if  not projection_query:
-            	return [ result for result in collection.find(query_doc).sort(sort_query).limit(limit) ]
+                return [ result for result in collection.find(query_doc).sort(sort_query).limit(limit) ]
             else:
                 return [ result for result in collection.find(query_doc, projection_query).sort(sort_query).limit(limit) ]
         elif projection_query:

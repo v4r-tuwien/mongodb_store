@@ -63,20 +63,18 @@ class TestMessageStoreProxy(unittest.TestCase):
         # get documents with limit
         result_limited = msg_store.query(Pose._type, message_query={'orientation.z': {'$gt': 10} }, sort_query=[("$natural", 1)], limit=10)
         self.assertEqual(len(result_limited), 10)
-        self.assertListEqual([int(doc[0].orientation.x) for doc in result_limited], range(10))
+        self.assertListEqual([int(doc[0].orientation.x) for doc in result_limited], list(range(10)))
 
-	#get documents without "orientation" field
-	result_no_id = msg_store.query(Pose._type, message_query={}, projection_query={"orientation": 0})
+        #get documents without "orientation" field
+        result_no_id = msg_store.query(Pose._type, message_query={}, projection_query={"orientation": 0})
         for doc in result_no_id:
-		self.assertEqual(int(doc[0].orientation.z),0 )
-
-
-
+            self.assertEqual(int(doc[0].orientation.z),0 )
 
         # must remove the item or unittest only really valid once
-        print meta["_id"]
-        print str(meta["_id"])
-        deleted = msg_store.delete(str(meta["_id"]))
+        print(meta["_id"])
+        print(str(meta["_id"]))
+        for stored, meta in msg_store.query(Pose._type):
+            deleted = msg_store.delete(str(meta["_id"]))
         self.assertTrue(deleted)
 
     def test_add_message_no_wait(self):
@@ -88,6 +86,10 @@ class TestMessageStoreProxy(unittest.TestCase):
         rospy.sleep(2)
         count_after_insert = len(msg_store.query(Pose._type, meta_query={ "no_wait": True }))
         self.assertTrue(count_after_insert > count_before_insert)
+        
+        for stored, meta in msg_store.query(Pose._type):
+            deleted = msg_store.delete(str(meta["_id"]))
+            
 
     def test_non_ascii(self):
         msg_store = MessageStoreProxy()
@@ -99,6 +101,9 @@ class TestMessageStoreProxy(unittest.TestCase):
             self.assertEqual(msg.data, qmsg.data)
         except rospy.service.ServiceException:
             self.fail("non ascii unicode string cannot be queried")
+
+        for stored, meta in msg_store.query(Pose._type):
+            deleted = msg_store.delete(str(meta["_id"]))
 
 
 if __name__ == '__main__':
