@@ -10,7 +10,7 @@ import copy
 import platform
 if float(platform.python_version()[0:2]) >= 3.0:
     _PY3 = True
-    import io as StringIO
+    from io import BytesIO
 else:
     _PY3 = False
     import StringIO
@@ -202,7 +202,7 @@ def sanitize_value(attr, v, type):
             # ensure unicode
             try:
                 if _PY3:
-                    v = str(v, "utf-8")
+                    v = str(v)#, "utf-8")
                 else:
                     v = unicode(v, "utf-8")
             except UnicodeDecodeError as e:
@@ -334,7 +334,7 @@ def fill_message(message, document):
             else:
                 if ( (not _PY3 and isinstance(value, unicode)) or
                     (_PY3 and isinstance(value, str)) ):
-                    setattr(message, slot, value.encode('utf-8'))
+                    setattr(message, slot, value)#.encode('utf-8'))
                 else:
                     setattr(message, slot, value)
 
@@ -520,7 +520,10 @@ def serialise_message(message):
     :Returns:
         | mongodb_store_msgs.msg.SerialisedMessage: A serialies copy of message
     """
-    buf=StringIO.StringIO()
+    if _PY3:
+        buf = BytesIO()
+    else:
+        buf=StringIO.StringIO()
     message.serialize(buf)
     serialised_msg = SerialisedMessage()
     serialised_msg.msg = buf.getvalue()
